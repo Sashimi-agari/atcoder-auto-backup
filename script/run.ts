@@ -70,7 +70,7 @@ const main = async () => {
   // 自分は普段C++しかつかわないので提出をC++でフィルタしていて、ACした提出のみをcommitするようにしています。
   const cppAcSubs = submissions.filter(
     ({ result, language }) =>
-      result === "AC" && language.toLowerCase().startsWith("cpp"),
+      result === "AC" && language.toLowerCase().startsWith("c++"),
   );
 
   // 提出がない場合はコミットしないように
