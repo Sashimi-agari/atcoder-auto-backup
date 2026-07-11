@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { z } from "zod";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 import { exit } from "process";
 import * as cheerio from "cheerio";
 import { execSync } from "child_process";
@@ -67,18 +67,18 @@ const main = async () => {
   const json = await resp.json();
   const submissions = submission.array().parse(json);
 
-  // 自分は普段Rustしかつかわないので提出をRustでフィルタしていて、ACした提出のみをcommitするようにしています。
-  const rustAcSubs = submissions.filter(
+  // 自分は普段C++しかつかわないので提出をC++でフィルタしていて、ACした提出のみをcommitするようにしています。
+  const cppAcSubs = submissions.filter(
     ({ result, language }) =>
-      result === "AC" && language.toLowerCase().startsWith("rust"),
+      result === "AC" && language.toLowerCase().startsWith("cpp"),
   );
 
   // 提出がない場合はコミットしないように
-  if (rustAcSubs.length === 0) {
+  if (cppAcSubs.length === 0) {
     return;
   }
   
-  const acCount = rustAcSubs.length;
+  const acCount = cppAcSubs.length;
 
   // submissions/yyyymmdd/ ディレクトリの作成
   const dir = `submissions/${yyyymmdd}`;
@@ -87,7 +87,7 @@ const main = async () => {
   // 同じ問題への違う提出があった際に別々のファイルとして格納できるように提出数をもっておくcounter
   const counter: Record<string, number> = {};
   
-  for (const { contest_id, id, problem_id } of rustAcSubs) {
+  for (const { contest_id, id, problem_id } of cppAcSubs) {
     const endpoint = `${BASE_SUBMISSION_ENDPOINT}/${contest_id}/submissions/${id}`;
     const resp = await fetch(endpoint);
     const html = await resp.text();
@@ -99,10 +99,10 @@ const main = async () => {
     const baseFileName = `submissions/${yyyymmdd}/${problem_id}`;
     const preCount = counter[problem_id];
     
-    // 同じ問題への提出が重なった場合はsubmissions/20250101/abc123a-2.rs とかで格納されるように 
+    // 同じ問題への提出が重なった場合はsubmissions/20250101/abc123a-2.cpp とかで格納されるように 
     const fileName = preCount
-      ? `${baseFileName}_${preCount + 1}.rs`
-      : `${baseFileName}.rs`;
+      ? `${baseFileName}_${preCount + 1}.cpp`
+      : `${baseFileName}.cpp`;
     
     const cc = preCount ?? 0;
     counter[problem_id] = cc + 1;
