@@ -95,6 +95,12 @@ const main = async () => {
     // 提出コードの取得
     const $ = cheerio.load(html);
     const code = $("#submission-code").text();
+
+    console.log("code length:", code.length);
+
+    if (code.length === 0) {
+      console.log(html);
+    }
     
     const baseFileName = `submissions/${yyyymmdd}/${problem_id}`;
     const preCount = counter[problem_id];
