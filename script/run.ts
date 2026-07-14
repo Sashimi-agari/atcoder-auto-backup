@@ -50,6 +50,7 @@ const end = (json: Setting, yyyymmdd: string, count: number) => {
 
 
 const main = async () => {
+  console.log("main start");
   // 現在時刻の取得と設定JSONからAtCoderユーザーとlastModifiedの取得
   const { currentUnix, yyyymmdd } = getCurrent();
   const settings = JSON.parse(readFileSync(SETTING_JSON, "utf-8")) as Setting;
@@ -67,11 +68,15 @@ const main = async () => {
   const json = await resp.json();
   const submissions = submission.array().parse(json);
 
+  console.log("submission count:", submissions.length);
+
   // 自分は普段C++しかつかわないので提出をC++でフィルタしていて、ACした提出のみをcommitするようにしています。
   const cppAcSubs = submissions.filter(
     ({ result, language }) =>
       result === "AC" && language.toLowerCase().startsWith("c++"),
   );
+
+  console.log("cpp AC count:", cppAcSubs.length);
 
   // 提出がない場合はコミットしないように
   if (cppAcSubs.length === 0) {
