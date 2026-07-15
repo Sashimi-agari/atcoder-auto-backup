@@ -93,7 +93,7 @@ const main = async () => {
   // 同じ問題への違う提出があった際に別々のファイルとして格納できるように提出数をもっておくcounter
   const counter: Record<string, number> = {};
   const browser = await chromium.launch({
-  headless: true,
+  headless: false,
   });
 
 const page = await browser.newPage();
@@ -104,16 +104,20 @@ const page = await browser.newPage();
   `${BASE_SUBMISSION_ENDPOINT}/${contest_id.toLowerCase()}/submissions/${id}`;
 
     await page.goto(endpoint, {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
     });
 
-    const code = (
-      await page.locator(".ace_line").allTextContents()
-    ).join("\n");
+    console.log("opened:", endpoint);
+    console.log("title:", await page.title());
 
-    const code = (
-      await page.locator(".ace_line").allTextContents()
-    ).join("\n");
+    await page.waitForTimeout(2000);
+
+    const lines = await page.locator(".ace_line").allTextContents();
+
+    console.log("line count:", lines.length);
+
+    const code = lines.join("\n");
+
     
     const baseFileName = `submissions/${yyyymmdd}/${problem_id}`;
     const preCount = counter[problem_id];
@@ -127,11 +131,13 @@ const page = await browser.newPage();
     counter[problem_id] = cc + 1;
 
     // ファイルの作成・git操作
-    writeFileSync(fileName, code, "utf-8");
     if (!code.trim()) {
       console.log(`Failed to fetch code: ${endpoint}`);
       continue;
     }
+    
+    writeFileSync(fileName, code, "utf-8");
+
     execSync(`git add ${fileName}`);
     const commitMessage = `Submission for ${problem_id} on ${yyyymmdd}`;
     console.log(commitMessage);
