@@ -4,8 +4,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import { exit } from "process";
-import * as cheerio from "cheerio";
 import { execSync } from "child_process";
+import { chromium } from "playwright";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -57,6 +57,10 @@ const main = async () => {
   const lastModified = settings.lastModified;
   const nextJson = { ...settings, lastModified: currentUnix };
   
+  console.log("user:", user);
+  console.log("lastModified:", lastModified);
+  console.log("currentUnix:", currentUnix);
+
   if (!user || !lastModified) {
     throw new Error("settings.jsonが壊れてます！");
   }
@@ -66,12 +70,14 @@ const main = async () => {
   const resp = await fetch(endpoint);
   const json = await resp.json();
   const submissions = submission.array().parse(json);
+  console.log(submissions[0]);
 
   // 自分は普段C++しかつかわないので提出をC++でフィルタしていて、ACした提出のみをcommitするようにしています。
   const cppAcSubs = submissions.filter(
     ({ result, language }) =>
       result === "AC" && language.toLowerCase().startsWith("c++"),
   );
+  console.log(cppAcSubs.slice(0, 5));
 
   // 提出がない場合はコミットしないように
   if (cppAcSubs.length === 0) {
@@ -86,18 +92,28 @@ const main = async () => {
 
   // 同じ問題への違う提出があった際に別々のファイルとして格納できるように提出数をもっておくcounter
   const counter: Record<string, number> = {};
+  const browser = await chromium.launch({
+  headless: true,
+  });
+
+const page = await browser.newPage();
   
   for (const { contest_id, id, problem_id } of cppAcSubs) {
-    const endpoint = `${BASE_SUBMISSION_ENDPOINT}/${contest_id}/submissions/${id}`;
-    const resp = await fetch(endpoint);
-    const html = await resp.text();
+    console.log("contest_id:", contest_id);
+    const endpoint =
+  `${BASE_SUBMISSION_ENDPOINT}/${contest_id.toLowerCase()}/submissions/${id}`;
 
-    // 提出コードの取得
-    const $ = cheerio.load(html);
-    console.log("submission url:", endpoint);
-    console.log("submission-code elements:", $("#submission-code").length);
-    const code = $("#submission-code").text();
-    console.log("code length:", code.length);
+    await page.goto(endpoint, {
+      waitUntil: "networkidle",
+    });
+
+    const code = (
+      await page.locator(".ace_line").allTextContents()
+    ).join("\n");
+
+    const code = (
+      await page.locator(".ace_line").allTextContents()
+    ).join("\n");
     
     const baseFileName = `submissions/${yyyymmdd}/${problem_id}`;
     const preCount = counter[problem_id];
@@ -112,11 +128,18 @@ const main = async () => {
 
     // ファイルの作成・git操作
     writeFileSync(fileName, code, "utf-8");
+    if (!code.trim()) {
+      console.log(`Failed to fetch code: ${endpoint}`);
+      continue;
+    }
     execSync(`git add ${fileName}`);
     const commitMessage = `Submission for ${problem_id} on ${yyyymmdd}`;
     console.log(commitMessage);
     execSync(`git commit -m "${commitMessage}"`);
   }
+
+  await browser.close();
+
   end(nextJson, yyyymmdd, acCount);
 };
 

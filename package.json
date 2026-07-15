@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "tsnode": "ts-node script/run.ts"
+    "tsnode": "ts-node script/run.ts",
+    "playwright": "ts-node script/test-playwright.ts"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
+    "playwright": "^1.61.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
