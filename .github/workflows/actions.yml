@@ -1,8 +1,8 @@
 name: atcoder submission fetcher
 
 on:
-  schedule:
-    - cron: '55 14 * * *'
+  #schedule:
+    #- cron: '55 14 * * *'
   workflow_dispatch:
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
         run: |
           echo $RUNNER_NAME
           curl https://api.ipify.org
-          
+
       - name: Run fetch script
         run: npm run tsnode
 
