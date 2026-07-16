@@ -30,6 +30,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium
 
+      - name: Test AtCoder
+        run: |
+          curl -I https://atcoder.jp/
+          curl -I https://atcoder.jp/contests/apg4b/submissions/77324247
+
       - name: Run fetch script
         run: npm run tsnode
 
