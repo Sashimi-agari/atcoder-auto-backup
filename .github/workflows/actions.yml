@@ -35,6 +35,11 @@ jobs:
           curl -I https://atcoder.jp/
           curl -I https://atcoder.jp/contests/apg4b/submissions/77324247
 
+      - name: Show Runner
+        run: |
+          echo $RUNNER_NAME
+          curl https://api.ipify.org
+          
       - name: Run fetch script
         run: npm run tsnode
 
