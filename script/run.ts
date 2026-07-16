@@ -93,7 +93,8 @@ const main = async () => {
   // 同じ問題への違う提出があった際に別々のファイルとして格納できるように提出数をもっておくcounter
   const counter: Record<string, number> = {};
   const browser = await chromium.launch({
-  headless: false,
+  headless: true,
+  args: ["--no-sandbox"],
   });
 
 const page = await browser.newPage();
