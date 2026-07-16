@@ -2,7 +2,7 @@ name: atcoder submission fetcher
 
 on:
   #schedule:
-    #- cron: '55 14 * * *'
+    # - cron: '55 14 * * *'
   workflow_dispatch:
 
 jobs:
