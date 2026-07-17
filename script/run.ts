@@ -110,13 +110,17 @@ const page = await browser.newPage();
     console.log("opened:", endpoint);
     console.log("title:", await page.title());
 
-    await page.waitForTimeout(2000);
+    await page.waitForFunction(() => {
+      const w = window as any;
+      return !!w.ace;
+    });
 
-    const lines = await page.locator(".ace_line").allTextContents();
+    const code = await page.evaluate(() => {
+      const w = window as any;
+      return w.ace.edit("submission-code").getValue();
+    });
 
-    console.log("line count:", lines.length);
-
-    const code = lines.join("\n");
+    console.log("line count:", code.split("\n").length);
 
     
     const baseFileName = `submissions/${yyyymmdd}/${problem_id}`;
@@ -141,7 +145,10 @@ const page = await browser.newPage();
     execSync(`git add ${fileName}`);
     const commitMessage = `Submission for ${problem_id} on ${yyyymmdd}`;
     console.log(commitMessage);
-    execSync(`git commit -m "${commitMessage}"`);
+    execSync(`git commit -m "${commitMessage}"`, {
+      stdio: "inherit",
+    });
+    execSync("git push");
   }
 
   await browser.close();
