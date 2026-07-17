@@ -19,3 +19,7 @@ int main() {
   
   for(int i = 0; i < H; i++) {
     cout << "#" << a.at(i) << "#" << endl;
+  }
+  
+  cout << b <<endl;
+}
